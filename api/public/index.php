@@ -5,7 +5,9 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use App\Controller\AuthController;
+use App\Controller\CartController;
 use App\Controller\HealthController;
+use App\Controller\OrderController;
 use App\Controller\ProductController;
 use App\Http\Request;
 use App\Http\Router;
@@ -42,5 +44,16 @@ $router->get('/products/{id}',     ProductController::class, 'show');
 $router->post('/products',         ProductController::class, 'store');
 $router->put('/products/{id}',     ProductController::class, 'update');
 $router->delete('/products/{id}',  ProductController::class, 'destroy');
+
+$router->get('/cart',                CartController::class, 'index');
+$router->post('/cart/items',         CartController::class, 'addItem');
+$router->put('/cart/items/{id}',     CartController::class, 'updateItem');
+$router->delete('/cart/items/{id}',  CartController::class, 'removeItem');
+$router->delete('/cart',             CartController::class, 'clear');
+
+$router->get('/orders',              OrderController::class, 'index');
+$router->get('/orders/{id}',         OrderController::class, 'show');
+$router->post('/orders',             OrderController::class, 'store');
+$router->put('/orders/{id}/status',  OrderController::class, 'updateStatus');
 
 $router->dispatch($request);
