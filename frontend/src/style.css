@@ -1,1 +1,44 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap");
+
+@theme {
+  /* Colors */
+  --color-canvas:       #F7F6F4;
+  --color-surface:      #EDEDEB;
+  --color-ink:          #1C1C1E;
+  --color-ink-muted:    #6B6B70;
+  --color-ink-faint:    #A8A8AD;
+  --color-accent:       #D9251D;
+  --color-accent-hover: #B81E17;
+  --color-accent-soft:  #F9EBEA;
+  --color-success:      #1E6B3E;
+  --color-warning:      #92540A;
+  --color-info:         #1A4D8F;
+
+  /* Typography */
+  --font-display: "Sora", sans-serif;
+  --font-body:    "Plus Jakarta Sans", sans-serif;
+
+  /* Border radius */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-default: 160ms ease;
+}
+
+html {
+  font-family: var(--font-body);
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms;
+    transition-duration: 0.01ms;
+  }
+}
