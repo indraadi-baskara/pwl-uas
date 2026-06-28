@@ -5,7 +5,10 @@
     "dev": "concurrently -n API,WEB -c green,blue \"php -S localhost:8000 -t api/public\" \"pnpm --dir frontend dev\"",
     "build": "pnpm --dir frontend build",
     "prod": "pnpm build && concurrently -n API,WEB -c green,blue \"php -S localhost:8000 -t api/public\" \"php -S localhost:5173 -t frontend/dist\"",
-    "generate": "php api/vendor/bin/openapi api/src --format json -o openapi.json && pnpm --dir frontend exec openapi-typescript ../openapi.json -o src/types/api.generated.ts"
+    "generate": "php api/vendor/bin/openapi api/src --format json -o openapi.json && pnpm --dir frontend exec openapi-typescript ../openapi.json -o src/types/api.generated.ts",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
