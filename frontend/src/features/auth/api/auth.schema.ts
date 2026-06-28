@@ -17,3 +17,11 @@ export const LoginRequestSchema: z.ZodType<LoginRequest> = z.object({
   email:    z.string().email(),
   password: z.string().min(8),
 })
+
+export type RegisterRequest = components['schemas']['RegisterRequest']
+
+export const RegisterRequestSchema: z.ZodType<RegisterRequest> = z.object({
+  email:    z.string().email(),
+  password: z.string().min(8),
+  role:     z.enum(['user', 'admin']),
+})

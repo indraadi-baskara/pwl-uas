@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useLogin } from '../api/use-login'
+import { useRegister } from '../api/use-register'
 
 const router = useRouter()
-const { mutate: login, isPending, isError, error } = useLogin()
+const { mutate: register, isPending, isError, error } = useRegister()
 
-const form = reactive({ email: '', password: '' })
+const form = reactive({
+  email:    '',
+  password: '',
+  role:     'user' as 'user' | 'admin',
+})
 const submitted = ref(false)
 
 function handleSubmit() {
   submitted.value = true
-  login({ email: form.email, password: form.password })
+  register({ email: form.email, password: form.password, role: form.role })
 }
 </script>
 
@@ -28,9 +32,9 @@ function handleSubmit() {
           class="mt-1 text-3xl font-bold tracking-tight text-ink"
           style="font-family: var(--font-display)"
         >
-          Selamat Datang
+          Buat Akun
         </h1>
-        <p class="mt-1 text-sm text-ink-muted">Masuk ke akun Anda</p>
+        <p class="mt-1 text-sm text-ink-muted">Daftar sebagai pembeli atau penjual</p>
       </div>
 
       <!-- Card -->
@@ -42,18 +46,51 @@ function handleSubmit() {
           role="alert"
           class="mb-5 rounded-lg bg-accent-soft px-4 py-3 text-sm text-accent"
         >
-          {{ error?.message ?? 'Email atau password salah.' }}
+          {{ error?.message ?? 'Pendaftaran gagal. Coba lagi.' }}
         </div>
 
         <form novalidate @submit.prevent="handleSubmit">
 
+          <!-- Role selector -->
+          <div class="mb-5">
+            <p class="mb-2 text-sm font-medium text-ink">Daftar sebagai</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                :class="[
+                  'rounded-lg border px-4 py-3 text-sm font-semibold transition-colors duration-160',
+                  form.role === 'user'
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'border-surface text-ink-muted hover:border-accent hover:text-accent',
+                ]"
+                @click="form.role = 'user'"
+              >
+                <span class="block text-base">🛒</span>
+                Pembeli
+              </button>
+              <button
+                type="button"
+                :class="[
+                  'rounded-lg border px-4 py-3 text-sm font-semibold transition-colors duration-160',
+                  form.role === 'admin'
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'border-surface text-ink-muted hover:border-accent hover:text-accent',
+                ]"
+                @click="form.role = 'admin'"
+              >
+                <span class="block text-base">🏪</span>
+                Penjual
+              </button>
+            </div>
+          </div>
+
           <!-- Email -->
           <div class="mb-4">
-            <label for="email" class="mb-1 block text-sm font-medium text-ink">
+            <label for="reg-email" class="mb-1 block text-sm font-medium text-ink">
               Email
             </label>
             <input
-              id="email"
+              id="reg-email"
               v-model="form.email"
               type="email"
               autocomplete="email"
@@ -71,15 +108,15 @@ function handleSubmit() {
 
           <!-- Password -->
           <div class="mb-6">
-            <label for="password" class="mb-1 block text-sm font-medium text-ink">
+            <label for="reg-password" class="mb-1 block text-sm font-medium text-ink">
               Password
             </label>
             <input
-              id="password"
+              id="reg-password"
               v-model="form.password"
               type="password"
-              autocomplete="current-password"
-              placeholder="••••••••"
+              autocomplete="new-password"
+              placeholder="Min. 8 karakter"
               required
               :class="[
                 'w-full rounded-lg border bg-surface px-4 py-3 text-sm text-ink',
@@ -112,20 +149,20 @@ function handleSubmit() {
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
             </svg>
-            {{ isPending ? 'Memproses...' : 'Masuk' }}
+            {{ isPending ? 'Mendaftar...' : 'Daftar Sekarang' }}
           </button>
 
         </form>
       </div>
 
-      <!-- Register link -->
+      <!-- Login link -->
       <p class="mt-5 text-center text-sm text-ink-muted">
-        Belum punya akun?
+        Sudah punya akun?
         <button
           class="font-semibold text-accent hover:underline"
-          @click="router.push({ name: 'register' })"
+          @click="router.push({ name: 'login' })"
         >
-          Daftar
+          Masuk
         </button>
       </p>
 
