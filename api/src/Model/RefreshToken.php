@@ -43,6 +43,19 @@ final class RefreshToken
         return $plainToken;
     }
 
+    public static function findByHash(string $plainToken): ?self
+    {
+        $hash = hash('sha256', $plainToken);
+
+        $stmt = Database::connection()->prepare(
+            'SELECT * FROM refresh_tokens WHERE token_hash = :hash LIMIT 1'
+        );
+        $stmt->execute(['hash' => $hash]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row !== false ? self::fromRow($row) : null;
+    }
+
     public static function findValid(string $plainToken): ?self
     {
         $hash = hash('sha256', $plainToken);

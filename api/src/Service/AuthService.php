@@ -28,6 +28,11 @@ final class AuthService
         $token = RefreshToken::findValid($plainRefreshToken);
 
         if ($token === null) {
+            // Replay detection: token exists but was already revoked → possible theft
+            $existing = RefreshToken::findByHash($plainRefreshToken);
+            if ($existing !== null && $existing->revoked) {
+                RefreshToken::revokeAllForUser($existing->userId);
+            }
             throw new \RuntimeException('Invalid or expired refresh token');
         }
 
