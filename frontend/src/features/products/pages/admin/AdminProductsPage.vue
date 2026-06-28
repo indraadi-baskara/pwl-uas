@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useProducts } from '@/features/products/api/use-products'
+import AdminHeader from '@/components/AdminHeader.vue'
 import { useDeleteProduct } from '@/features/products/api/use-delete-product'
-import ProductCard from '@/features/products/components/ProductCard.vue'
-import Pagination from '@/features/products/components/Pagination.vue'
 import type { Product } from '@/features/products/api/product.schema'
+import { useProducts } from '@/features/products/api/use-products'
+import Pagination from '@/features/products/components/Pagination.vue'
+import ProductCard from '@/features/products/components/ProductCard.vue'
 
 const router = useRouter()
 const page   = ref(1)
@@ -40,23 +41,8 @@ function onPageChange(p: number) {
 <template>
   <div class="min-h-screen bg-canvas">
 
-    <!-- Header -->
-    <header class="border-b border-surface bg-white shadow-sm">
-      <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <div class="flex items-center gap-3">
-          <button
-            class="text-sm text-ink-muted transition-colors duration-160 hover:text-ink"
-            @click="router.push({ name: 'admin' })"
-          >
-            ← Dasbor
-          </button>
-          <h1
-            class="font-bold text-ink"
-            style="font-family: var(--font-display)"
-          >
-            Kelola Produk
-          </h1>
-        </div>
+    <AdminHeader back="Dasbor" back-route="admin" title="Kelola Produk">
+      <template #action>
         <button
           class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white
                  transition-opacity duration-160 hover:opacity-90"
@@ -64,8 +50,8 @@ function onPageChange(p: number) {
         >
           + Tambah Produk
         </button>
-      </div>
-    </header>
+      </template>
+    </AdminHeader>
 
     <main class="mx-auto max-w-6xl px-6 py-8">
 

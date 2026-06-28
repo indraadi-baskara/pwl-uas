@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import AdminHeader from '@/components/AdminHeader.vue'
+import type { ProductFormData } from '@/features/products/api/post-product'
 import { useCreateProduct } from '@/features/products/api/use-create-product'
 import ProductForm from '@/features/products/components/ProductForm.vue'
-import type { ProductFormData } from '@/features/products/api/post-product'
 
 const router = useRouter()
 const { mutate, isPending, error } = useCreateProduct()
@@ -17,23 +18,7 @@ function onSubmit(data: ProductFormData) {
 <template>
   <div class="min-h-screen bg-canvas">
 
-    <!-- Header -->
-    <header class="border-b border-surface bg-white shadow-sm">
-      <div class="mx-auto flex max-w-3xl items-center gap-4 px-6 py-4">
-        <button
-          class="text-sm text-ink-muted transition-colors duration-160 hover:text-ink"
-          @click="router.push({ name: 'admin-products' })"
-        >
-          ← Kembali
-        </button>
-        <h1
-          class="font-bold text-ink"
-          style="font-family: var(--font-display)"
-        >
-          Tambah Produk
-        </h1>
-      </div>
-    </header>
+    <AdminHeader back="Kembali" back-route="admin-products" title="Tambah Produk" />
 
     <main class="mx-auto max-w-3xl px-6 py-8">
       <div class="rounded-xl border border-surface bg-white p-6">
