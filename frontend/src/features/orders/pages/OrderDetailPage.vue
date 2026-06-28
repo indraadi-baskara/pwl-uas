@@ -1,24 +1,44 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import PublicHeader from '@/components/PublicHeader.vue'
-import { STATUS_COLORS, STATUS_LABELS } from '@/features/orders/api/order.schema'
-import { useOrder } from '@/features/orders/api/use-order'
+import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import PublicHeader from "@/components/PublicHeader.vue";
+import {
+  STATUS_COLORS,
+  STATUS_LABELS,
+} from "@/features/orders/api/order.schema";
+import { useOrder } from "@/features/orders/api/use-order";
 
-const route  = useRoute()
-const router = useRouter()
-const id     = computed(() => Number(route.params.id))
+const route = useRoute();
+const router = useRouter();
+const id = computed(() => Number(route.params.id));
 
-const { data: order, isLoading, isError } = useOrder(id)
+const { data: order, isLoading, isError } = useOrder(id);
 
 function formatPrice(n: number) {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency', currency: 'IDR', maximumFractionDigits: 0,
-  }).format(n)
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
 function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('id-ID', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(iso))
+  if (!iso) return;
+
+  let validIsoString = iso;
+
+  if (iso?.includes(" ")) {
+    console.warn(
+      "The provided ISO string contains a space instead of 'T'. This may lead to incorrect date parsing.",
+      iso,
+    );
+    validIsoString = iso?.replace(" ", "T")?.replace("+00", "Z");
+  }
+
+  return new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "long",
+    timeStyle: "short",
+  }).format(new Date(validIsoString));
 }
 </script>
 
@@ -42,7 +62,10 @@ function formatDate(iso: string) {
       </div>
 
       <!-- Error / Not found -->
-      <div v-else-if="isError" class="rounded-xl bg-accent-soft px-6 py-12 text-center">
+      <div
+        v-else-if="isError"
+        class="rounded-xl bg-accent-soft px-6 py-12 text-center"
+      >
         <p class="text-accent">Pesanan tidak ditemukan.</p>
       </div>
 
@@ -50,10 +73,15 @@ function formatDate(iso: string) {
         <!-- Header -->
         <div class="flex items-start justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-ink" style="font-family: var(--font-display)">
+            <h1
+              class="text-2xl font-bold text-ink"
+              style="font-family: var(--font-display)"
+            >
               Pesanan #{{ order.id }}
             </h1>
-            <p class="mt-1 text-sm text-ink-muted">{{ formatDate(order.created_at) }}</p>
+            <p class="mt-1 text-sm text-ink-muted">
+              {{ formatDate(order.created_at) }}
+            </p>
           </div>
           <span
             :class="[
@@ -66,26 +94,44 @@ function formatDate(iso: string) {
         </div>
 
         <!-- Items -->
-        <div class="mt-6 overflow-hidden rounded-xl border border-surface bg-white">
+        <div
+          class="mt-6 overflow-hidden rounded-xl border border-surface bg-white"
+        >
           <table class="w-full text-sm">
             <thead class="border-b border-surface bg-canvas">
               <tr>
-                <th class="px-4 py-3 text-left font-semibold text-ink-muted">Produk</th>
-                <th class="px-4 py-3 text-center font-semibold text-ink-muted">Qty</th>
-                <th class="px-4 py-3 text-right font-semibold text-ink-muted">Harga</th>
-                <th class="px-4 py-3 text-right font-semibold text-ink-muted">Subtotal</th>
+                <th class="px-4 py-3 text-left font-semibold text-ink-muted">
+                  Produk
+                </th>
+                <th class="px-4 py-3 text-center font-semibold text-ink-muted">
+                  Qty
+                </th>
+                <th class="px-4 py-3 text-right font-semibold text-ink-muted">
+                  Harga
+                </th>
+                <th class="px-4 py-3 text-right font-semibold text-ink-muted">
+                  Subtotal
+                </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-surface">
               <tr v-for="item in order.items" :key="item.id">
                 <td class="px-4 py-3 text-ink">{{ item.name }}</td>
-                <td class="px-4 py-3 text-center text-ink-muted">{{ item.quantity }}</td>
-                <td class="px-4 py-3 text-right text-ink-muted">{{ formatPrice(item.price) }}</td>
-                <td class="px-4 py-3 text-right font-semibold text-ink">{{ formatPrice(item.subtotal) }}</td>
+                <td class="px-4 py-3 text-center text-ink-muted">
+                  {{ item.quantity }}
+                </td>
+                <td class="px-4 py-3 text-right text-ink-muted">
+                  {{ formatPrice(item.price) }}
+                </td>
+                <td class="px-4 py-3 text-right font-semibold text-ink">
+                  {{ formatPrice(item.subtotal) }}
+                </td>
               </tr>
             </tbody>
           </table>
-          <div class="flex justify-between border-t border-surface px-4 py-3 font-bold text-ink">
+          <div
+            class="flex justify-between border-t border-surface px-4 py-3 font-bold text-ink"
+          >
             <span>Total</span>
             <span>{{ formatPrice(order.total) }}</span>
           </div>
