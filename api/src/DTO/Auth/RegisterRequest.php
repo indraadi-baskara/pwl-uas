@@ -14,5 +14,7 @@ final readonly class RegisterRequest
         public string $email,
         #[OA\Property(type: 'string', minLength: 8, example: 'password123')]
         public string $password,
+        #[OA\Property(type: 'string', enum: ['user', 'admin'], default: 'user', example: 'user')]
+        public string $role = 'user',
     ) {}
 }

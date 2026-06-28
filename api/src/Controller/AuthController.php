@@ -90,16 +90,20 @@ final class AuthController
 
         $v = (new Validator($request->body))
             ->required('email')->email('email')
-            ->required('password')->minLength('password', 8);
+            ->required('password')->minLength('password', 8)
+            ->in('role', ['user', 'admin']);
 
         if (!$v->passes()) {
             Response::error($v->firstError(), 400);
         }
 
+        $role = isset($request->body['role']) && $request->body['role'] === 'admin' ? 'admin' : 'user';
+
         try {
             $user = $this->auth->register(
                 (string) $request->body['email'],
                 (string) $request->body['password'],
+                $role,
             );
         } catch (\RuntimeException $e) {
             Response::error($e->getMessage(), 409);

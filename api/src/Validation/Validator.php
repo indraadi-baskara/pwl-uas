@@ -37,6 +37,15 @@ final class Validator
         return $this;
     }
 
+    /** @param string[] $allowed */
+    public function in(string $field, array $allowed): self
+    {
+        if (isset($this->data[$field]) && !in_array($this->data[$field], $allowed, true)) {
+            $this->errors[$field] = "{$field} must be one of: " . implode(', ', $allowed);
+        }
+        return $this;
+    }
+
     public function passes(): bool
     {
         return $this->errors === [];
