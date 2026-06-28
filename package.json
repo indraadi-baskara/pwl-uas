@@ -8,7 +8,9 @@
     "generate": "php api/vendor/bin/openapi api/src --format json -o openapi.json && pnpm --dir frontend exec openapi-typescript ../openapi.json -o src/types/api.generated.ts",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "db:reset": "docker compose down -v && docker compose up -d"
+    "db:reset": "docker compose down -v && docker compose up -d",
+    "db:migrate": "php api/migrate.php",
+    "db:seed": "php api/seed.php"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

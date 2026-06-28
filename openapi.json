@@ -11,6 +11,126 @@
         }
     ],
     "paths": {
+        "/auth/login": {
+            "post": {
+                "summary": "Login and receive token cookies",
+                "operationId": "authLogin",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthUserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded"
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "summary": "Register a new user",
+                "operationId": "authRegister",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthUserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded"
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "summary": "Rotate tokens using refresh token cookie",
+                "operationId": "authRefresh",
+                "responses": {
+                    "200": {
+                        "description": "Tokens rotated"
+                    },
+                    "401": {
+                        "description": "Invalid or expired refresh token"
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded"
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "summary": "Logout and clear token cookies",
+                "operationId": "authLogout",
+                "responses": {
+                    "200": {
+                        "description": "Logged out"
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "summary": "Return the authenticated user from access token cookie",
+                "operationId": "authMe",
+                "responses": {
+                    "200": {
+                        "description": "Authenticated user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthUserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not authenticated"
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "summary": "Check API health",
@@ -32,6 +152,71 @@
     },
     "components": {
         "schemas": {
+            "AuthUserResponse": {
+                "required": [
+                    "id",
+                    "email",
+                    "role"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "admin@example.com"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "admin",
+                        "enum": [
+                            "user",
+                            "admin"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "LoginRequest": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "admin@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "password123",
+                        "minLength": 8
+                    }
+                },
+                "type": "object"
+            },
+            "RegisterRequest": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "user@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "password123",
+                        "minLength": 8
+                    }
+                },
+                "type": "object"
+            },
             "HealthResponse": {
                 "required": [
                     "status"
