@@ -46,4 +46,13 @@ final class Response
     {
         self::error($message, 403);
     }
+
+    /**
+     * @param list<mixed> $data
+     * @param array{total: int, per_page: int, current_page: int, last_page: int} $pagination
+     */
+    public static function paginated(array $data, array $pagination, int $status = 200): never
+    {
+        self::json(['status' => 'success', 'data' => $data, 'pagination' => $pagination], $status);
+    }
 }

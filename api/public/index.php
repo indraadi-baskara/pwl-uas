@@ -6,6 +6,7 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use App\Controller\AuthController;
 use App\Controller\HealthController;
+use App\Controller\ProductController;
 use App\Http\Request;
 use App\Http\Router;
 use Dotenv\Dotenv;
@@ -13,7 +14,7 @@ use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(dirname(__DIR__, 2));
 $dotenv->load();
 
-$origin = getenv('FRONTEND_URL') ?: 'http://localhost:5173';
+$origin = $_ENV['FRONTEND_URL'] ?? getenv('FRONTEND_URL') ?: 'http://localhost:5173';
 
 header("Access-Control-Allow-Origin: {$origin}");
 header('Access-Control-Allow-Credentials: true');
@@ -35,5 +36,11 @@ $router->post('/auth/register', AuthController::class, 'register');
 $router->post('/auth/login',    AuthController::class, 'login');
 $router->post('/auth/refresh',  AuthController::class, 'refresh');
 $router->post('/auth/logout',   AuthController::class, 'logout');
+
+$router->get('/products',          ProductController::class, 'index');
+$router->get('/products/{id}',     ProductController::class, 'show');
+$router->post('/products',         ProductController::class, 'store');
+$router->put('/products/{id}',     ProductController::class, 'update');
+$router->delete('/products/{id}',  ProductController::class, 'destroy');
 
 $router->dispatch($request);
