@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth'
-import { postLogout } from '@/features/auth'
 import { useRouter } from 'vue-router'
+import { postLogout } from '@/features/auth'
+import { useAuthStore } from '@/stores/auth'
 
 const auth   = useAuthStore()
 const router = useRouter()
@@ -9,7 +9,7 @@ const router = useRouter()
 async function logout() {
   await postLogout()
   auth.clearUser()
-  router.push({ name: 'login' })
+  void router.push({ name: 'login' })
 }
 </script>
 
@@ -50,9 +50,29 @@ async function logout() {
       >
         Dasbor Admin
       </h2>
-      <p class="mt-2 text-[#6B6B70]">
-        Fitur produk, keranjang, dan pesanan akan tersedia di sini.
-      </p>
+      <p class="mt-2 text-[#6B6B70]">Kelola toko ban Anda dari sini.</p>
+
+      <!-- Quick links -->
+      <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <button
+          class="group flex items-start gap-4 rounded-xl border border-surface bg-white p-5
+                 text-left transition-shadow duration-160 hover:shadow-md"
+          @click="router.push({ name: 'admin-products' })"
+        >
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft">
+            <svg class="h-5 w-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </div>
+          <div>
+            <p class="font-semibold text-ink" style="font-family: var(--font-display)">
+              Produk
+            </p>
+            <p class="mt-0.5 text-xs text-ink-muted">Tambah, edit, dan hapus produk ban</p>
+          </div>
+        </button>
+      </div>
     </main>
 
   </div>

@@ -4,12 +4,27 @@ import { useAuthStore } from '@/stores/auth'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    // Public
+    {
+      path: '/products',
+      name: 'products',
+      component: () => import('@/features/products/pages/ProductListPage.vue'),
+    },
+    {
+      path: '/products/:id',
+      name: 'product-detail',
+      component: () => import('@/features/products/pages/ProductDetailPage.vue'),
+    },
+
+    // Auth
     {
       path: '/login',
       name: 'login',
       component: () => import('@/features/auth/pages/LoginPage.vue'),
       meta: { guest: true },
     },
+
+    // Admin
     {
       path: '/admin',
       name: 'admin',
@@ -17,8 +32,27 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
+      path: '/admin/products',
+      name: 'admin-products',
+      component: () => import('@/features/products/pages/admin/AdminProductsPage.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: '/admin/products/create',
+      name: 'admin-products-create',
+      component: () => import('@/features/products/pages/admin/CreateProductPage.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: '/admin/products/:id/edit',
+      name: 'admin-products-edit',
+      component: () => import('@/features/products/pages/admin/EditProductPage.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+
+    {
       path: '/',
-      redirect: '/admin',
+      redirect: '/products',
     },
   ],
 })
