@@ -107,6 +107,10 @@ final class OrderController
     {
         $auth = Auth::requireAuth();
 
+        if ($auth['role'] === 'admin') {
+            Response::forbidden('Penjual tidak dapat membuat pesanan');
+        }
+
         try {
             $order = Order::createFromCart($auth['sub']);
         } catch (\RuntimeException $e) {

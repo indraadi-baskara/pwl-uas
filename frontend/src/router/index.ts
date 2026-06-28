@@ -16,30 +16,30 @@ const router = createRouter({
       component: () => import('@/features/products/pages/ProductDetailPage.vue'),
     },
 
-    // Cart + Checkout + Orders (require auth)
+    // Cart + Checkout + Orders (buyer only — admins are redirected to /admin)
     {
       path: '/cart',
       name: 'cart',
       component: () => import('@/features/cart/pages/CartPage.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, buyerOnly: true },
     },
     {
       path: '/checkout',
       name: 'checkout',
       component: () => import('@/features/orders/pages/CheckoutPage.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, buyerOnly: true },
     },
     {
       path: '/orders',
       name: 'orders',
       component: () => import('@/features/orders/pages/OrdersPage.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, buyerOnly: true },
     },
     {
       path: '/orders/:id',
       name: 'order-detail',
       component: () => import('@/features/orders/pages/OrderDetailPage.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, buyerOnly: true },
     },
 
     // Auth
@@ -114,6 +114,10 @@ router.beforeEach(async (to) => {
 
   if (to.meta.requiresAdmin && !auth.isAdmin) {
     return { name: 'login' }
+  }
+
+  if (to.meta.buyerOnly && auth.isAdmin) {
+    return { name: 'admin' }
   }
 
   if (to.meta.guest && auth.isAuthenticated) {

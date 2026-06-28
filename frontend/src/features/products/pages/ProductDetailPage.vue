@@ -120,8 +120,8 @@ function onAddToCart() {
             {{ product.description }}
           </p>
 
-          <!-- Add to cart -->
-          <div v-if="product.stock > 0" class="mt-6 flex items-center gap-3">
+          <!-- Add to cart (buyer only) -->
+          <div v-if="product.stock > 0 && !auth.isAdmin" class="mt-6 flex items-center gap-3">
             <!-- Qty selector -->
             <div class="flex items-center rounded-lg border border-surface">
               <button

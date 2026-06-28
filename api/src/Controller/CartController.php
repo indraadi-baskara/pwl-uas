@@ -30,7 +30,7 @@ final class CartController
     )]
     public function index(Request $request): never
     {
-        $auth = Auth::requireAuth();
+        $auth = $this->requireBuyer();
         $cart = Cart::getWithItems($auth['sub']);
 
         Response::success($this->cartToArray($cart));
@@ -63,7 +63,7 @@ final class CartController
     )]
     public function addItem(Request $request): never
     {
-        $auth = Auth::requireAuth();
+        $auth = $this->requireBuyer();
 
         $v = (new Validator($request->body))->required('product_id');
 
@@ -109,7 +109,7 @@ final class CartController
     )]
     public function updateItem(Request $request, string $id): never
     {
-        $auth = Auth::requireAuth();
+        $auth = $this->requireBuyer();
 
         $v = (new Validator($request->body))->required('quantity');
 
@@ -152,7 +152,7 @@ final class CartController
     )]
     public function removeItem(Request $request, string $id): never
     {
-        $auth = Auth::requireAuth();
+        $auth = $this->requireBuyer();
 
         try {
             $cart = Cart::removeItem($auth['sub'], (int) $id);
@@ -179,12 +179,22 @@ final class CartController
     )]
     public function clear(Request $request): never
     {
-        $auth = Auth::requireAuth();
+        $auth = $this->requireBuyer();
 
         Cart::clearByUserId($auth['sub']);
         $cart = Cart::getWithItems($auth['sub']);
 
         Response::success($this->cartToArray($cart));
+    }
+
+    /** @return array{sub: int, email: string, role: string} */
+    private function requireBuyer(): array
+    {
+        $auth = Auth::requireAuth();
+        if ($auth['role'] === 'admin') {
+            Response::forbidden('Penjual tidak dapat menggunakan keranjang belanja');
+        }
+        return $auth;
     }
 
     /** @return array<string, mixed> */

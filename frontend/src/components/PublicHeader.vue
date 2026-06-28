@@ -32,8 +32,9 @@ async function logout() {
       </button>
 
       <div class="flex items-center gap-3">
-        <!-- Cart icon + badge -->
+        <!-- Cart icon + badge (buyer only) -->
         <button
+          v-if="auth.isAuthenticated && !auth.isAdmin"
           class="relative p-2 text-ink-muted transition-colors duration-160 hover:text-accent"
           title="Keranjang"
           @click="router.push({ name: 'cart' })"
@@ -53,9 +54,9 @@ async function logout() {
           </span>
         </button>
 
-        <!-- Orders link (authenticated) -->
+        <!-- Orders link (buyer only) -->
         <button
-          v-if="auth.isAuthenticated"
+          v-if="auth.isAuthenticated && !auth.isAdmin"
           class="text-sm text-ink-muted transition-colors duration-160 hover:text-ink"
           @click="router.push({ name: 'orders' })"
         >
