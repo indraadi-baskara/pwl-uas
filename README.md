@@ -52,6 +52,363 @@ Aplikasi e-commerce berbasis web untuk toko ban, dibuat sebagai tugas akhir mata
 
 ---
 
+## Diagram
+
+### Kasus Penggunaan
+
+```mermaid
+flowchart LR
+    Pembeli(["👤 Pembeli"])
+    Penjual(["👤 Penjual"])
+
+    subgraph Publik["Akses Publik"]
+        UC1["Daftar Akun"]
+        UC2["Masuk"]
+        UC3["Jelajah Produk"]
+        UC4["Lihat Detail Produk"]
+    end
+
+    subgraph Pembeli_UC["Hanya Pembeli"]
+        UC5["Tambah ke Keranjang"]
+        UC6["Kelola Keranjang"]
+        UC7["Buat Pesanan"]
+        UC8["Lihat Riwayat Pesanan"]
+    end
+
+    subgraph Penjual_UC["Hanya Penjual"]
+        UC9["Tambah Produk"]
+        UC10["Edit / Hapus Produk"]
+        UC11["Lihat Semua Pesanan"]
+        UC12["Perbarui Status Pesanan"]
+    end
+
+    subgraph Terautentikasi["Semua Pengguna Masuk"]
+        UC13["Keluar"]
+    end
+
+    Pembeli --> Publik
+    Pembeli --> Pembeli_UC
+    Pembeli --> Terautentikasi
+
+    Penjual --> Publik
+    Penjual --> Penjual_UC
+    Penjual --> Terautentikasi
+```
+
+---
+
+### Relasi Entitas (ERD)
+
+```mermaid
+erDiagram
+    users {
+        int         id           PK
+        varchar     email        UK
+        varchar     password_hash
+        varchar     role
+        timestamp   created_at
+    }
+
+    refresh_tokens {
+        int         id           PK
+        int         user_id      FK
+        varchar     token_hash   UK
+        timestamp   expires_at
+        boolean     revoked
+        timestamp   created_at
+    }
+
+    rate_limits {
+        int         id           PK
+        varchar     key
+        int         attempts
+        timestamp   window_start
+    }
+
+    products {
+        int         id           PK
+        varchar     name
+        text        description
+        int         price
+        int         stock
+        varchar     category
+        varchar     image_path
+        timestamp   created_at
+        timestamp   updated_at
+    }
+
+    carts {
+        int         id           PK
+        int         user_id      FK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    cart_items {
+        int         id           PK
+        int         cart_id      FK
+        int         product_id   FK
+        int         quantity
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    orders {
+        int         id           PK
+        int         user_id      FK
+        text        status
+        int         total
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    order_items {
+        int         id           PK
+        int         order_id     FK
+        int         product_id   FK
+        text        name
+        int         price
+        int         quantity
+        timestamptz created_at
+    }
+
+    users          ||--o{ refresh_tokens : "memiliki"
+    users          ||--o| carts          : "memiliki"
+    users          ||--o{ orders         : "membuat"
+    carts          ||--o{ cart_items     : "berisi"
+    products       ||--o{ cart_items     : "dimuat di"
+    orders         ||--o{ order_items    : "berisi"
+    products       ||--o{ order_items    : "disalin ke"
+```
+
+---
+
+### Diagram Urutan — Alur Autentikasi
+
+```mermaid
+sequenceDiagram
+    actor U as Pengguna
+    participant F as Frontend
+    participant A as API
+    participant D as Database
+
+    rect rgb(240, 248, 255)
+        Note over U,D: Masuk
+        U->>F: Isi email + kata sandi
+        F->>A: POST /auth/login
+        A->>D: Cari pengguna, verifikasi Argon2ID
+        D-->>A: Data pengguna
+        A->>D: Simpan hash token pembaruan
+        A-->>F: Set kuki HttpOnly (akses + pembaruan)
+        F-->>U: Arahkan ke halaman utama
+    end
+
+    rect rgb(240, 255, 240)
+        Note over U,D: Token Akses Kedaluwarsa — Pembaruan Diam-diam
+        F->>A: GET /orders (token kedaluwarsa)
+        A-->>F: 401 Unauthorized
+        F->>A: POST /auth/refresh (kuki pembaruan)
+        A->>D: findValid(token) → token aktif
+        D-->>A: Token valid
+        A->>D: Cabut token lama, simpan token baru
+        A-->>F: Kuki baru disetel
+        F->>A: GET /orders (ulang dengan token baru)
+        A-->>F: 200 OK
+    end
+
+    rect rgb(255, 240, 240)
+        Note over U,D: Deteksi Ulang-Pakai Token (Potensi Pencurian)
+        F->>A: POST /auth/refresh (token sudah dicabut)
+        A->>D: findValid(token) → null
+        A->>D: findByHash(token) → ditemukan, revoked = true
+        A->>D: revokeAllForUser(user_id)
+        D-->>A: Semua token dicabut
+        A-->>F: 401 Unauthorized
+        F-->>U: Arahkan ke halaman masuk
+    end
+```
+
+---
+
+### Diagram Alir — Siklus Hidup Permintaan API
+
+```mermaid
+flowchart TD
+    A([Permintaan Masuk]) --> B{Metode OPTIONS?}
+    B -- Ya --> C([204 No Content])
+    B -- Tidak --> D[Router::dispatch]
+    D --> E{Rute ditemukan?}
+    E -- Tidak --> F([404 Not Found])
+    E -- Ya --> G[Panggil Controller]
+    G --> H{Butuh autentikasi?}
+    H -- Tidak --> PROC
+    H -- Ya --> J[Auth::requireAuth\nbaca kuki JWT]
+    J --> K{Token valid?}
+    K -- Tidak --> L([401 Unauthorized])
+    K -- Ya --> M{Khusus admin?}
+    M -- Ya --> N{role = admin?}
+    N -- Tidak --> O([403 Forbidden])
+    N -- Ya --> PROC
+    M -- Tidak --> P{Khusus pembeli?}
+    P -- Ya --> Q{role = admin?}
+    Q -- Ya --> R([403 Forbidden])
+    Q -- Tidak --> PROC
+    P -- Tidak --> PROC
+    PROC[Validasi input\nQuery PDO] --> T[Response::success\natau error / paginated]
+    T --> U([Respons JSON])
+```
+
+---
+
+### Diagram Kelas — Arsitektur Latar
+
+```mermaid
+classDiagram
+    direction TB
+
+    class Router {
+        +get(path, controller, method)
+        +post(path, controller, method)
+        +put(path, controller, method)
+        +delete(path, controller, method)
+        +dispatch(Request) void
+    }
+
+    class Request {
+        +string method
+        +string path
+        +array body
+        +array query
+        +array cookies
+    }
+
+    class Response {
+        +success(data, code)$
+        +error(message, code)$
+        +paginated(data, meta)$
+        +notFound(message)$
+        +forbidden(message)$
+    }
+
+    class Auth {
+        +requireAuth() array$
+        +requireAdmin() array$
+    }
+
+    class AuthService {
+        +login(email, password) array
+        +register(email, password, role) User
+        +refresh(token) array
+        +logout(token) void
+        +decodeAccessToken(token) array
+        -issueTokens(User) array
+        -generateAccessToken(User) string
+        -generateRefreshToken(User) string
+    }
+
+    class AuthController {
+        -auth AuthService
+        +me(Request) never
+        +register(Request) never
+        +login(Request) never
+        +refresh(Request) never
+        +logout(Request) never
+    }
+
+    class ProductController {
+        +index(Request) never
+        +show(Request, id) never
+        +store(Request) never
+        +update(Request, id) never
+        +destroy(Request, id) never
+    }
+
+    class CartController {
+        +index(Request) never
+        +addItem(Request) never
+        +updateItem(Request, id) never
+        +removeItem(Request, id) never
+        +clear(Request) never
+        -requireBuyer() array
+    }
+
+    class OrderController {
+        +index(Request) never
+        +show(Request, id) never
+        +store(Request) never
+        +updateStatus(Request, id) never
+    }
+
+    class User {
+        +int id
+        +string email
+        +string passwordHash
+        +string role
+        +findByEmail(email)$
+        +findById(id)$
+        +create(email, password, role)$
+        +verifyPassword(password) bool
+    }
+
+    class RefreshToken {
+        +int id
+        +int userId
+        +string tokenHash
+        +timestamp expiresAt
+        +bool revoked
+        +findValid(token)$
+        +findByHash(token)$
+        +revoke(token)$
+        +revokeAllForUser(userId)$
+    }
+
+    class Product {
+        +int id
+        +string name
+        +int price
+        +int stock
+        +findAll(page, limit, filters)$
+        +findById(id)$
+        +create(data, imagePath)$
+        +update(id, data)$
+        +delete(id)$
+    }
+
+    class Order {
+        +int id
+        +int userId
+        +string status
+        +int total
+        +list items
+        +createFromCart(userId)$
+        +findByUser(userId, page, limit)$
+        +findAll(page, limit)$
+        +findById(id)$
+        +updateStatus(id, status)$
+    }
+
+    Router ..> Request : menggunakan
+    Router ..> AuthController : memanggil
+    Router ..> ProductController : memanggil
+    Router ..> CartController : memanggil
+    Router ..> OrderController : memanggil
+
+    AuthController --> AuthService
+    AuthService --> User
+    AuthService --> RefreshToken
+
+    CartController ..> Auth : requireBuyer
+    OrderController ..> Auth : requireAuth/Admin
+    ProductController ..> Auth : requireAdmin
+
+    ProductController --> Product
+    CartController --> Product
+    OrderController --> Order
+    OrderController --> Product
+```
+
+---
+
 ## Memulai
 
 ### Prasyarat
