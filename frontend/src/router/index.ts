@@ -16,11 +16,43 @@ const router = createRouter({
       component: () => import('@/features/products/pages/ProductDetailPage.vue'),
     },
 
+    // Cart + Checkout + Orders (require auth)
+    {
+      path: '/cart',
+      name: 'cart',
+      component: () => import('@/features/cart/pages/CartPage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/checkout',
+      name: 'checkout',
+      component: () => import('@/features/orders/pages/CheckoutPage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/orders',
+      name: 'orders',
+      component: () => import('@/features/orders/pages/OrdersPage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/orders/:id',
+      name: 'order-detail',
+      component: () => import('@/features/orders/pages/OrderDetailPage.vue'),
+      meta: { requiresAuth: true },
+    },
+
     // Auth
     {
       path: '/login',
       name: 'login',
       component: () => import('@/features/auth/pages/LoginPage.vue'),
+      meta: { guest: true },
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/features/auth/pages/RegisterPage.vue'),
       meta: { guest: true },
     },
 
@@ -29,6 +61,18 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('@/pages/admin/DashboardPage.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: '/admin/orders',
+      name: 'admin-orders',
+      component: () => import('@/features/orders/pages/admin/AdminOrdersPage.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: '/admin/orders/:id',
+      name: 'admin-order-detail',
+      component: () => import('@/features/orders/pages/admin/AdminOrderDetailPage.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
@@ -73,7 +117,7 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.guest && auth.isAuthenticated) {
-    return { name: 'admin' }
+    return { name: auth.isAdmin ? 'admin' : 'products' }
   }
 })
 

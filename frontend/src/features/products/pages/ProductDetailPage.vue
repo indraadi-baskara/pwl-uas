@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useProduct } from '@/features/products/api/use-product'
+import PublicHeader from '@/components/PublicHeader.vue'
+import { useAddToCart }  from '@/features/cart/api/use-add-to-cart'
+import { useProduct }    from '@/features/products/api/use-product'
+import { useAuthStore }  from '@/stores/auth'
 
 const route  = useRoute()
 const router = useRouter()
+const auth   = useAuthStore()
 const id     = computed(() => Number(route.params.id))
 
 const { data: product, isLoading, isError } = useProduct(id)
+const { mutate: addToCart, isPending: adding } = useAddToCart()
+
+const qty    = ref(1)
+const added  = ref(false)
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -16,25 +24,27 @@ function formatPrice(price: number) {
     maximumFractionDigits: 0,
   }).format(price)
 }
+
+function onAddToCart() {
+  if (!product.value) return
+
+  if (!auth.isAuthenticated) {
+    void router.push({ name: 'login' })
+    return
+  }
+
+  addToCart({ product_id: product.value.id, quantity: qty.value }, {
+    onSuccess: () => {
+      added.value = true
+      setTimeout(() => { added.value = false }, 2000)
+    },
+  })
+}
 </script>
 
 <template>
   <div class="min-h-screen bg-canvas">
-
-    <!-- Header -->
-    <header class="border-b border-surface bg-white">
-      <div class="mx-auto max-w-4xl px-6 py-5">
-        <button
-          class="flex items-center gap-1 text-sm text-ink-muted transition-colors duration-160 hover:text-ink"
-          @click="router.back()"
-        >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          Kembali
-        </button>
-      </div>
-    </header>
+    <PublicHeader />
 
     <main class="mx-auto max-w-4xl px-6 py-8">
 
@@ -99,9 +109,7 @@ function formatPrice(price: number) {
             <span
               :class="[
                 'rounded px-2 py-0.5 text-xs font-semibold',
-                product.stock > 0
-                  ? 'bg-green-50 text-green-700'
-                  : 'bg-accent-soft text-accent',
+                product.stock > 0 ? 'bg-green-50 text-green-700' : 'bg-accent-soft text-accent',
               ]"
             >
               {{ product.stock > 0 ? `Stok: ${product.stock}` : 'Habis' }}
@@ -111,6 +119,37 @@ function formatPrice(price: number) {
           <p v-if="product.description" class="mt-4 text-sm leading-relaxed text-ink-muted">
             {{ product.description }}
           </p>
+
+          <!-- Add to cart -->
+          <div v-if="product.stock > 0" class="mt-6 flex items-center gap-3">
+            <!-- Qty selector -->
+            <div class="flex items-center rounded-lg border border-surface">
+              <button
+                class="px-3 py-2 text-ink-muted transition-colors hover:text-ink disabled:opacity-40"
+                :disabled="qty <= 1"
+                @click="qty--"
+              >−</button>
+              <span class="w-10 text-center font-semibold text-ink">{{ qty }}</span>
+              <button
+                class="px-3 py-2 text-ink-muted transition-colors hover:text-ink"
+                :disabled="qty >= product.stock"
+                @click="qty++"
+              >+</button>
+            </div>
+
+            <button
+              :disabled="adding"
+              :class="[
+                'flex-1 rounded-lg py-2.5 font-semibold text-white transition-all duration-160',
+                added
+                  ? 'bg-green-600'
+                  : 'bg-accent enabled:hover:opacity-90 disabled:opacity-50',
+              ]"
+              @click="onAddToCart"
+            >
+              {{ added ? '✓ Ditambahkan!' : adding ? 'Menambahkan...' : 'Tambah ke Keranjang' }}
+            </button>
+          </div>
         </div>
       </div>
 

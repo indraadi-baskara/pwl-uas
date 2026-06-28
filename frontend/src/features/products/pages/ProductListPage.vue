@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useProducts } from '@/features/products/api/use-products'
-import ProductCard from '@/features/products/components/ProductCard.vue'
+import PublicHeader from '@/components/PublicHeader.vue'
 import Pagination from '@/features/products/components/Pagination.vue'
+import ProductCard from '@/features/products/components/ProductCard.vue'
+import { useProducts } from '@/features/products/api/use-products'
 import type { Product } from '@/features/products/api/product.schema'
 
 const route  = useRoute()
@@ -49,30 +50,12 @@ watch(() => route.query, (q) => {
   page.value     = Number(q.page     ?? 1)
 })
 
-function formatPrice(price: number) {
-  return new Intl.NumberFormat('id-ID', {
-    style:                 'currency',
-    currency:              'IDR',
-    maximumFractionDigits: 0,
-  }).format(price)
-}
 </script>
 
 <template>
   <div class="min-h-screen bg-canvas">
 
-    <!-- Header -->
-    <header class="border-b border-surface bg-white">
-      <div class="mx-auto max-w-6xl px-6 py-5">
-        <h1
-          class="text-2xl font-bold text-ink"
-          style="font-family: var(--font-display)"
-        >
-          Depo Waroeng Ban
-        </h1>
-        <p class="mt-0.5 text-sm text-ink-muted">Katalog Ban Lengkap</p>
-      </div>
-    </header>
+    <PublicHeader />
 
     <main class="mx-auto max-w-6xl px-6 py-8">
 

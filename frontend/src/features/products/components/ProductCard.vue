@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
 import type { Product } from '@/features/products/api/product.schema'
 
 const props = defineProps<{
@@ -21,7 +22,11 @@ function formatPrice(price: number) {
 </script>
 
 <template>
-  <div class="group overflow-hidden rounded-lg border border-surface bg-white transition-shadow duration-160 hover:shadow-md">
+  <component
+    :is="admin ? 'div' : RouterLink"
+    :to="admin ? undefined : { name: 'product-detail', params: { id: product.id } }"
+    class="group block overflow-hidden rounded-lg border border-surface bg-white transition-shadow duration-160 hover:shadow-md"
+  >
     <!-- Image -->
     <div class="aspect-square w-full overflow-hidden bg-canvas">
       <img
@@ -76,5 +81,5 @@ function formatPrice(price: number) {
         </button>
       </div>
     </div>
-  </div>
+  </component>
 </template>
