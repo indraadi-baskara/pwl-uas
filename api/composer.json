@@ -3,7 +3,8 @@
   "description": "Sistem E-Commerce Sederhana",
   "type": "project",
   "require": {
-    "php": "^8.3"
+    "php": "^8.3",
+    "zircote/swagger-php": "^6.2"
   },
   "autoload": {
     "psr-4": {
