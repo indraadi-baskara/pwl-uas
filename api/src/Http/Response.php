@@ -16,18 +16,34 @@ final class Response
         exit;
     }
 
+    /** @param array<string, mixed>|list<mixed> $data */
+    public static function success(array $data, int $status = 200): never
+    {
+        self::json(['status' => 'success', 'data' => $data], $status);
+    }
+
+    public static function error(string $message, int $status = 400): never
+    {
+        self::json(['status' => 'error', 'message' => $message], $status);
+    }
+
     public static function notFound(string $message = 'Not Found'): never
     {
-        self::json(['error' => $message], 404);
+        self::error($message, 404);
     }
 
     public static function methodNotAllowed(): never
     {
-        self::json(['error' => 'Method Not Allowed'], 405);
+        self::error('Method Not Allowed', 405);
     }
 
-    public static function unprocessable(string $message): never
+    public static function unauthorized(string $message = 'Unauthorized'): never
     {
-        self::json(['error' => $message], 422);
+        self::error($message, 401);
+    }
+
+    public static function forbidden(string $message = 'Forbidden'): never
+    {
+        self::error($message, 403);
     }
 }
