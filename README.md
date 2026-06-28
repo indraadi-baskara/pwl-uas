@@ -4,6 +4,37 @@ Aplikasi e-commerce berbasis web untuk toko ban, dibuat sebagai tugas akhir mata
 
 ---
 
+## Arsitektur MVC
+
+Proyek ini menerapkan pola **MVC (Model-View-Controller)** dalam bentuk **decoupled** — lapisan *View* dipisah ke aplikasi frontend yang berdiri sendiri, sementara lapisan *Model* dan *Controller* berada di backend PHP.
+
+```mermaid
+flowchart LR
+    subgraph Backend["Latar — PHP 8.3"]
+        M["Model\n(User, Product, Cart, Order)"]
+        C["Controller\n(AuthController, ProductController, …)"]
+    end
+
+    subgraph Frontend["Muka — Vue 3"]
+        V["View\n(Pages, Components, Stores)"]
+    end
+
+    V -- "HTTP Request (JSON)" --> C
+    C -- "Olah logika bisnis" --> M
+    M -- "Data dari DB" --> C
+    C -- "JSON Response" --> V
+```
+
+| Komponen MVC | Implementasi | Lokasi |
+| --- | --- | --- |
+| **Model** | Kelas PHP yang merepresentasikan entitas dan mengelola semua akses basis data via PDO | `api/src/Model/` |
+| **View** | Komponen Vue 3 yang merender antarmuka dan mengelola interaksi pengguna | `frontend/src/` |
+| **Controller** | Kelas PHP yang menerima permintaan HTTP, memanggil Model, dan mengembalikan respons JSON | `api/src/Controller/` |
+
+Pendekatan ini dikenal sebagai **MVC berbasis API** (*API-driven MVC*) — pola yang umum digunakan pada aplikasi web modern di mana *View* berupa *Single Page Application* (SPA) yang berkomunikasi dengan *Controller* melalui REST API. Pemisahan ini tidak mengubah prinsip MVC, melainkan memperkuat pemisahan tanggung jawab (*separation of concerns*) karena setiap lapisan benar-benar independen.
+
+---
+
 ## Tumpukan Teknologi
 
 | Lapisan | Teknologi |
